@@ -7,11 +7,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace Calculadora
 {
     public partial class Main : Form
     {
+        const int MF_BYCOMMAND = 0X400;
+        [DllImport("user32")]
+        static extern int RemoveMenu(IntPtr hMenu, int nPosition, int wFlags);
+        [DllImport("user32")]
+        static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
+        [DllImport("user32")]
+        static extern int GetMenuItemCount(IntPtr hWnd);
+
         public Main()
         {
             InitializeComponent();
@@ -45,12 +54,12 @@ namespace Calculadora
             double Num1 = Convert.ToDouble(txtNum1.Text);
             double Num2 = Convert.ToDouble(txtNum2.Text);
 
-            if(operation == 1)
+            if (operation == 1)
             {
                 double Resultado = Num1 + Num2;
                 lblResultado.Text = Convert.ToString(Resultado);
             }
-            else if(operation == 2)
+            else if (operation == 2)
             {
                 double Resultado = Num1 - Num2;
                 lblResultado.Text = Convert.ToString(Resultado);
@@ -109,6 +118,41 @@ namespace Calculadora
         private void txtNum2_TextChanged(object sender, EventArgs e)
         {
             AltDisplay();
+        }
+
+        private void btnSair_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void Main_Load(object sender, EventArgs e)
+        {
+            IntPtr hMenu = GetSystemMenu(this.Handle, false);
+            int MenuCount = GetMenuItemCount(hMenu) - 1;
+            RemoveMenu(hMenu, MenuCount, MF_BYCOMMAND);
+        }
+
+        private void btnLimpar_Click(object sender, EventArgs e)
+        {
+            txtNum1.Clear();
+            txtNum2.Clear();
+            lblResultado.Text = "Resultado";
+        }
+
+        private void txtNum1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar) && e.KeyChar != '.' && e.KeyChar != ',')
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtNum2_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar) && e.KeyChar != '.' && e.KeyChar != ',')
+            {
+                e.Handled = true;
+            }
         }
     }
 }
